@@ -164,4 +164,4 @@ For security issues, please follow the responsible disclosure process in [SECURI
 
 ## License
 
-[MIT](LICENSE) © jnew00
+[MIT](LICENSE) © Inception Labs

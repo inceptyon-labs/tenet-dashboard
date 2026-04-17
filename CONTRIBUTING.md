@@ -10,7 +10,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ```bash
 # Clone and install
-git clone https://github.com/jnew00/tenet-dashboard.git
+git clone https://github.com/inception-labs/tenet-dashboard.git
 cd tenet-dashboard
 npm install
 cd client && npm install && cd ..
@@ -49,11 +49,11 @@ Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`.
 
 ## Reporting Bugs
 
-Open a [bug report issue](https://github.com/jnew00/tenet-dashboard/issues/new?template=bug_report.md). Include reproduction steps and your deployment method (Docker or local).
+Open a [bug report issue](https://github.com/inception-labs/tenet-dashboard/issues/new?template=bug_report.md). Include reproduction steps and your deployment method (Docker or local).
 
 ## Requesting Features
 
-Open a [feature request issue](https://github.com/jnew00/tenet-dashboard/issues/new?template=feature_request.md). Describe the problem you're solving, not just the solution.
+Open a [feature request issue](https://github.com/inception-labs/tenet-dashboard/issues/new?template=feature_request.md). Describe the problem you're solving, not just the solution.
 
 ## Security Issues
 
