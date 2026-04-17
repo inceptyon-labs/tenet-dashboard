@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+data/
+client/dist/
+*.tsbuildinfo
+
+# Added by repo-ready
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+.idea/

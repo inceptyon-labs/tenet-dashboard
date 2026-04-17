@@ -1,0 +1,52 @@
+import { z } from 'zod';
+
+export const severityEnum = z.enum(['critical', 'major', 'minor', 'info']);
+
+export const findingSchema = z.object({
+  dimension: z.string(),
+  severity: severityEnum,
+  rule: z.string().optional(),
+  title: z.string().max(512),
+  description: z.string().optional(),
+  file: z.string().nullable().optional(),
+  line: z.number().int().nullable().optional(),
+  column: z.number().int().nullable().optional(),
+  snippet: z.string().max(2000).nullable().optional(),
+  fix_prompt: z.string().min(1),
+  confidence: z.enum(['deterministic', 'heuristic']).optional(),
+});
+
+export const dimensionSchema = z.object({
+  key: z.string(),
+  score: z.number().int().min(0).max(100).nullable(),
+  weight: z.number().min(0).max(10),
+  applicable: z.boolean().default(true),
+  skill_version: z.string().optional(),
+  notes: z.string().optional(),
+  metrics: z.record(z.unknown()).optional(),
+});
+
+export const reportSchema = z.object({
+  project: z.object({
+    slug: z.string().regex(/^[a-z0-9][a-z0-9-]{0,127}$/),
+    name: z.string().max(256),
+    repo_url: z.string().nullable().optional(),
+    commit: z.string().max(64),
+    branch: z.string().max(256),
+  }),
+  run: z.object({
+    started_at: z.string().datetime(),
+    completed_at: z.string().datetime(),
+    orchestrator_version: z.string(),
+    dimensions_run: z.array(z.string()),
+    toolchain_summary: z.record(z.string()).optional(),
+    lines_of_code: z.number().int().optional(),
+    files_analyzed: z.number().int().optional(),
+  }),
+  dimensions: z.array(dimensionSchema),
+  findings: z.array(findingSchema),
+});
+
+export type ReportPayload = z.infer<typeof reportSchema>;
+export type DimensionPayload = z.infer<typeof dimensionSchema>;
+export type FindingPayload = z.infer<typeof findingSchema>;
