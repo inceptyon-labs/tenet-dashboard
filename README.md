@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="client/public/tenet-logo.png" alt="Tenet Dashboard" width="180">
+  <img src="client/public/tenet-white.png" alt="Tenet Dashboard" width="180">
 </p>
 
 <h1 align="center">Tenet Dashboard</h1>
@@ -10,9 +10,9 @@
   <img src="https://img.shields.io/badge/postgres-%3E%3D16-blue" alt="Postgres 16+">
 </p>
 
-Self-hosted application health dashboard that receives audit reports from the [Tenet skills suite](https://github.com/tenet-org/tenet-skills) and renders them with composite score rings, dimension tables, findings with copy-to-clipboard fix prompts, trend charts, and retention management.
+Self-hosted application health dashboard that receives audit reports from the [Tenet skills suite](https://github.com/inceptyon-labs/tenet-skills) and renders them with composite score rings, dimension tables, findings with copy-to-clipboard fix prompts, trend charts, and retention management.
 
-> Tenet is a two-part system. This repo is the **dashboard** — the web UI and API that stores and displays reports. The companion [**tenet-skills**](https://github.com/tenet-org/tenet-skills) repo is a Claude Code plugin that runs the audits and uploads results here.
+> Tenet is a two-part system. This repo is the **dashboard** — the web UI and API that stores and displays reports. The companion [**tenet-skills**](https://github.com/inceptyon-labs/tenet-skills) repo is a Claude Code plugin that runs the audits and uploads results here.
 
 ```
   Claude Code                          Unraid / Docker
@@ -77,7 +77,7 @@ cd client && npm run dev # Vite dev server on :5173 (proxies /api to :8787)
 ### 2. Install the skills plugin
 
 ```bash
-git clone https://github.com/tenet-org/tenet-skills.git ~/src/tenet-skills
+git clone https://github.com/inceptyon-labs/tenet-skills.git ~/src/tenet-skills
 ```
 
 Set the environment variables that tell the skills where to upload:
@@ -154,7 +154,7 @@ Snapshot the `./data/postgres` directory (Docker) or run `pg_dump` against your 
 
 ## Related
 
-- [tenet-skills](https://github.com/tenet-org/tenet-skills) — Claude Code plugin that runs audits and uploads reports to this dashboard
+- [tenet-skills](https://github.com/inceptyon-labs/tenet-skills) — Claude Code plugin that runs audits and uploads reports to this dashboard
 
 ## Contributing
 
@@ -164,4 +164,4 @@ For security issues, please follow the responsible disclosure process in [SECURI
 
 ## License
 
-[MIT](LICENSE) © Inception Labs
+[MIT](LICENSE) © Inceptyon Labs
