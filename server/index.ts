@@ -3,7 +3,6 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { eq } from 'drizzle-orm';
 import { runMigrations } from './db/migrate.js';
 import { db } from './db/client.js';
@@ -15,7 +14,6 @@ import findingsRoutes from './routes/findings.js';
 import trendsRoutes from './routes/trends.js';
 import settingsRoutes from './routes/settings.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
 
 async function main(): Promise<void> {
@@ -33,7 +31,7 @@ async function main(): Promise<void> {
 
   // Serve static files in production
   if (isProduction) {
-    const clientDist = path.resolve(__dirname, '../client/dist');
+    const clientDist = path.resolve(process.cwd(), 'client/dist');
     await fastify.register(fastifyStatic, {
       root: clientDist,
       prefix: '/',
@@ -54,7 +52,7 @@ async function main(): Promise<void> {
       if (request.url.startsWith('/api/')) {
         return reply.status(404).send({ error: 'Not found' });
       }
-      const clientDist = path.resolve(__dirname, '../client/dist');
+      const clientDist = path.resolve(process.cwd(), 'client/dist');
       return reply.sendFile('index.html', clientDist);
     });
   }

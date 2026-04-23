@@ -1,9 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function runMigrations(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
@@ -11,7 +8,7 @@ export async function runMigrations(): Promise<void> {
     throw new Error('DATABASE_URL environment variable is required');
   }
 
-  const sqlPath = path.resolve(__dirname, '../../sql/init.sql');
+  const sqlPath = path.resolve(process.cwd(), 'sql/init.sql');
   const sql = fs.readFileSync(sqlPath, 'utf-8');
 
   const client = new pg.Client({ connectionString });
