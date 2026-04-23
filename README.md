@@ -110,7 +110,8 @@ cloudflared tunnel run tenet
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | Yes | — | Postgres connection string |
-| `TENET_API_TOKEN` | Yes | — | Bearer token for write endpoints |
+| `TENET_API_TOKEN` | Yes | — | Bearer token for the skills plugin and CLI API calls |
+| `DASHBOARD_PASSWORD` | Yes | — | Password for the web UI login |
 | `PORT` | No | `8787` | Server listen port |
 | `HOST` | No | `0.0.0.0` | Server listen host |
 | `LOG_LEVEL` | No | `info` | Pino log level |
@@ -120,7 +121,7 @@ For Docker, `POSTGRES_PASSWORD` is also used by the Postgres container.
 
 ## API
 
-All write endpoints require `Authorization: Bearer $TENET_API_TOKEN`. Read endpoints are open (designed to run behind a private network or tunnel).
+Write endpoints accept **either** `Authorization: Bearer $TENET_API_TOKEN` (used by the skills plugin and CLI) **or** a signed session cookie obtained by logging in at the web UI with `DASHBOARD_PASSWORD`. Read endpoints are open (designed to run behind a private network or tunnel).
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|

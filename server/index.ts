@@ -13,6 +13,7 @@ import projectsRoutes from './routes/projects.js';
 import findingsRoutes from './routes/findings.js';
 import trendsRoutes from './routes/trends.js';
 import settingsRoutes from './routes/settings.js';
+import authRoutes from './routes/auth.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -40,6 +41,7 @@ async function main(): Promise<void> {
   }
 
   // Register route modules
+  await fastify.register(authRoutes);
   await fastify.register(reportsRoutes);
   await fastify.register(projectsRoutes);
   await fastify.register(findingsRoutes);

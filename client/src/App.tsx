@@ -1,10 +1,13 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProjectList } from './routes/ProjectList';
 import { ProjectDetail } from './routes/ProjectDetail';
 import { FindingDetail } from './routes/FindingDetail';
 import { TrendChartPage } from './routes/TrendChartPage';
 import { Settings } from './routes/Settings';
+import { Login } from './routes/Login';
+import { checkAuth } from './lib/api';
+import { colors, fontFamily } from './lib/theme';
 
 /* ---------- Toast system ---------- */
 
@@ -77,20 +80,71 @@ function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* ---------- Auth gate ---------- */
+
+type AuthState = 'loading' | 'authed' | 'unauthed';
+
+function AuthGate({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AuthState>('loading');
+
+  useEffect(() => {
+    let cancelled = false;
+    checkAuth().then((ok) => {
+      if (!cancelled) setState(ok ? 'authed' : 'unauthed');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handler = (): void => setState('unauthed');
+    window.addEventListener('tenet:unauthenticated', handler);
+    return () => window.removeEventListener('tenet:unauthenticated', handler);
+  }, []);
+
+  if (state === 'loading') {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: colors.base,
+          color: colors.textMuted,
+          fontFamily: fontFamily.sans,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 13,
+        }}
+      >
+        Loading…
+      </div>
+    );
+  }
+
+  if (state === 'unauthed') {
+    return <Login onAuthenticated={() => setState('authed')} />;
+  }
+
+  return <>{children}</>;
+}
+
 /* ---------- App ---------- */
 
 export function App() {
   return (
     <ToastProvider>
-      <div style={{ minHeight: '100vh', backgroundColor: '#030712' }}>
-        <Routes>
-          <Route path="/" element={<ProjectList />} />
-          <Route path="/p/:slug" element={<ProjectDetail />} />
-          <Route path="/p/:slug/f/:findingId" element={<FindingDetail />} />
-          <Route path="/p/:slug/trends" element={<TrendChartPage />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </div>
+      <AuthGate>
+        <div style={{ minHeight: '100vh', backgroundColor: '#030712' }}>
+          <Routes>
+            <Route path="/" element={<ProjectList />} />
+            <Route path="/p/:slug" element={<ProjectDetail />} />
+            <Route path="/p/:slug/f/:findingId" element={<FindingDetail />} />
+            <Route path="/p/:slug/trends" element={<TrendChartPage />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
+      </AuthGate>
     </ToastProvider>
   );
 }
