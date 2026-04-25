@@ -1,8 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { fetchProject, type ReportDetail as ReportDetailData, type FindingRow } from '../lib/api';
+import {
+  fetchProject,
+  fetchProjectReports,
+  type ReportDetail as ReportDetailData,
+  type FindingRow,
+  type ReportListItem,
+} from '../lib/api';
 import { colors, fontFamily } from '../lib/theme';
 import { CompositeScoreRing } from '../components/CompositeScoreRing';
+import { DeltaPill } from '../components/DeltaPill';
 import { DimensionTable } from '../components/DimensionTable';
 import { FindingsList } from '../components/FindingsList';
 import { TenetWordmark } from '../components/TenetWordmark';
@@ -35,6 +42,8 @@ export function ProjectDetail() {
   const reportId = searchParams.get('report_id') ?? undefined;
 
   const [data, setData] = useState<ReportDetailData | null>(null);
+  const [reports, setReports] = useState<ReportListItem[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,8 +57,22 @@ export function ProjectDetail() {
       .finally(() => setLoading(false));
   }, [slug, reportId]);
 
+  useEffect(() => {
+    if (!slug) return;
+    setReportsLoading(true);
+    fetchProjectReports(slug, 1, 25)
+      .then((res) => setReports(res.items))
+      .catch(() => setReports([]))
+      .finally(() => setReportsLoading(false));
+  }, [slug]);
+
   const severityCounts = useMemo(
     () => (data ? computeSeverityCounts(data.findings) : { critical: 0, major: 0, minor: 0, info: 0 }),
+    [data],
+  );
+
+  const dimensionMovement = useMemo(
+    () => summarizeDimensionDeltas(data?.delta?.dimensions),
     [data],
   );
 
@@ -137,6 +160,9 @@ export function ProjectDetail() {
           <h2 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 14px', color: colors.textPrimary, fontFamily: fontFamily.display }}>
             Composite Score
           </h2>
+          <div style={{ marginBottom: 14 }}>
+            <DeltaPill delta={data.delta?.composite ?? null} label={data.delta ? 'vs previous' : undefined} />
+          </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 32px' }}>
             <MetaItem label="Branch" value={data.branch} />
             <MetaItem label="Commit" value={data.commit?.slice(0, 7)} mono />
@@ -148,6 +174,15 @@ export function ProjectDetail() {
         </div>
       </div>
 
+      {(reportsLoading || reports.length > 1) && (
+        <ReportHistory
+          slug={slug ?? data.project_slug}
+          reports={reports}
+          selectedReportId={data.id}
+          loading={reportsLoading}
+        />
+      )}
+
       {/* Dimension table */}
       <div
         style={{
@@ -158,10 +193,27 @@ export function ProjectDetail() {
           marginBottom: 16,
         }}
       >
-        <h2 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px', padding: '0 16px', color: colors.textPrimary, fontFamily: fontFamily.display }}>
-          Dimension Scores
-        </h2>
-        <DimensionTable dimensions={data.dimensions} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '0 16px',
+            marginBottom: 8,
+            flexWrap: 'wrap',
+          }}
+        >
+          <h2 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: colors.textPrimary, fontFamily: fontFamily.display }}>
+            Dimension Scores
+          </h2>
+          <div style={{ fontSize: 11, color: colors.textMuted }}>
+            {data.delta
+              ? `${dimensionMovement.better} better / ${dimensionMovement.worse} worse / ${dimensionMovement.steady} steady`
+              : 'Baseline report'}
+          </div>
+        </div>
+        <DimensionTable dimensions={data.dimensions} deltas={data.delta?.dimensions} />
       </div>
 
       {/* Severity summary */}
@@ -195,6 +247,130 @@ export function ProjectDetail() {
 
       {/* Findings */}
       <FindingsList findings={data.findings} dimensions={data.dimensions} />
+    </div>
+  );
+}
+
+function summarizeDimensionDeltas(deltas?: Record<string, number> | null) {
+  const values = Object.values(deltas ?? {});
+  return {
+    better: values.filter((delta) => delta > 0).length,
+    worse: values.filter((delta) => delta < 0).length,
+    steady: values.filter((delta) => delta === 0).length,
+  };
+}
+
+function ReportHistory({
+  slug,
+  reports,
+  selectedReportId,
+  loading,
+}: {
+  slug: string;
+  reports: ReportListItem[];
+  selectedReportId: string;
+  loading: boolean;
+}) {
+  if (loading) {
+    return (
+      <div
+        style={{
+          backgroundColor: colors.card,
+          border: colors.cardBorder,
+          borderRadius: 10,
+          padding: '13px 16px',
+          marginBottom: 16,
+          color: colors.textMuted,
+          fontSize: 11,
+        }}
+      >
+        Loading report history...
+      </div>
+    );
+  }
+
+  if (reports.length <= 1) return null;
+
+  const latestId = reports[0]?.id;
+
+  return (
+    <div
+      style={{
+        backgroundColor: colors.card,
+        border: colors.cardBorder,
+        borderRadius: 10,
+        padding: '13px 14px 14px',
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, margin: 0, color: colors.textPrimary, fontFamily: fontFamily.display }}>
+          Report History
+        </h2>
+        <span style={{ fontSize: 11, color: colors.textMuted }}>
+          {reports.length} latest reports
+        </span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+        {reports.map((report, index) => {
+          const previous = reports[index + 1];
+          const delta = previous ? report.composite_score - previous.composite_score : null;
+          const selected = report.id === selectedReportId;
+          const href = report.id === latestId ? `/p/${slug}` : `/p/${slug}?report_id=${report.id}`;
+
+          return (
+            <Link
+              key={report.id}
+              to={href}
+              style={{
+                minWidth: 188,
+                textDecoration: 'none',
+                color: 'inherit',
+                borderRadius: 8,
+                border: selected ? '1px solid #4B5563' : '1px solid #1F2937',
+                backgroundColor: selected ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.025)',
+                padding: '10px 11px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                transition: 'border-color 0.15s, background-color 0.15s',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ fontSize: 10, color: index === 0 ? '#4ADE80' : colors.textMuted, fontFamily: fontFamily.sans }}>
+                  {index === 0 ? 'Latest' : `Run ${reports.length - index}`}
+                </span>
+                <DeltaPill delta={delta} compact />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontFamily: fontFamily.mono, fontSize: 18, color: colors.textPrimary, lineHeight: 1 }}>
+                  {report.composite_score}
+                </span>
+                <span style={{ fontFamily: fontFamily.mono, fontSize: 10, color: colors.textMuted }}>
+                  {report.commit.slice(0, 7)}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: colors.textMuted,
+                    fontFamily: fontFamily.mono,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {report.branch}
+                </span>
+                <span style={{ fontSize: 10, color: colors.textMuted, whiteSpace: 'nowrap' }}>
+                  {new Date(report.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProjects, type ProjectSummary } from '../lib/api';
 import { colors, fontFamily, relativeTime, getScoreConfig } from '../lib/theme';
+import { DeltaPill } from '../components/DeltaPill';
 import { Select } from '../components/Select';
 import { useToast } from '../App';
 
@@ -177,6 +178,7 @@ export function ProjectList() {
 function RunCard({ project }: { project: ProjectSummary }) {
   const score = project.latest_score ?? 0;
   const config = getScoreConfig(score);
+  const dimensionChanges = getTopDimensionChanges(project.latest_delta?.dimensions);
 
   return (
     <Link
@@ -267,7 +269,7 @@ function RunCard({ project }: { project: ProjectSummary }) {
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: 11,
@@ -280,6 +282,23 @@ function RunCard({ project }: { project: ProjectSummary }) {
               <ClockIcon small />
               {project.last_seen_at ? new Date(project.last_seen_at).toLocaleString() : '—'}
             </span>
+            {project.latest_delta ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <DeltaPill delta={project.latest_delta.composite} label="overall" compact />
+                {dimensionChanges.map((change) => (
+                  <DimensionDeltaChip key={change.key} name={change.key} delta={change.delta} />
+                ))}
+                {dimensionChanges.length === 0 && (
+                  <span style={{ fontSize: 10, color: colors.textMuted }}>
+                    dimensions steady
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span style={{ fontSize: 10, color: colors.textMuted }}>
+                baseline run
+              </span>
+            )}
           </div>
         </div>
 
@@ -289,11 +308,45 @@ function RunCard({ project }: { project: ProjectSummary }) {
             {project.report_count} {project.report_count === 1 ? 'report' : 'reports'}
           </div>
           <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
-            {relativeTime(project.last_seen_at)}
+            {project.report_count > 1 ? 'open history' : relativeTime(project.last_seen_at)}
           </div>
         </div>
       </div>
     </Link>
+  );
+}
+
+function getTopDimensionChanges(deltas?: Record<string, number> | null): Array<{ key: string; delta: number }> {
+  if (!deltas) return [];
+  return Object.entries(deltas)
+    .filter(([, delta]) => delta !== 0)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, 3)
+    .map(([key, delta]) => ({ key, delta }));
+}
+
+function DimensionDeltaChip({ name, delta }: { name: string; delta: number }) {
+  const improved = delta > 0;
+  const color = improved ? '#4ADE80' : '#F09595';
+
+  return (
+    <span
+      title={`${name} ${improved ? 'improved' : 'degraded'} by ${Math.abs(delta)} points`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        fontSize: 10,
+        color: colors.textMuted,
+        fontFamily: fontFamily.sans,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span style={{ color, fontFamily: fontFamily.mono, fontWeight: 600 }}>
+        {delta > 0 ? `+${delta}` : delta}
+      </span>
+      <span>{name}</span>
+    </span>
   );
 }
 

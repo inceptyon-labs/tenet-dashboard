@@ -1,14 +1,17 @@
 import { type DimensionRow } from '../lib/api';
 import { getScoreConfig, colors, fontFamily } from '../lib/theme';
+import { DeltaPill } from './DeltaPill';
 import { ScorePill } from './ScorePill';
 
 interface Props {
   dimensions: DimensionRow[];
+  deltas?: Record<string, number> | null;
 }
 
-export function DimensionTable({ dimensions }: Props) {
+export function DimensionTable({ dimensions, deltas }: Props) {
   const sorted = [...dimensions].sort((a, b) => b.weighted - a.weighted);
   const totalWeight = sorted.reduce((sum, d) => sum + d.weight, 0);
+  const showDeltaColumn = !!deltas && Object.keys(deltas).length > 0;
 
   const thStyle: React.CSSProperties = {
     textAlign: 'left',
@@ -28,6 +31,7 @@ export function DimensionTable({ dimensions }: Props) {
           <tr>
             <th style={{ ...thStyle, textAlign: 'left' }}>Dimension</th>
             <th style={{ ...thStyle, textAlign: 'center' }}>Score</th>
+            {showDeltaColumn && <th style={{ ...thStyle, textAlign: 'center' }}>Change</th>}
             <th style={{ ...thStyle, textAlign: 'right' }}>Weight</th>
             <th style={{ ...thStyle, textAlign: 'right' }}>Weighted</th>
             <th style={{ ...thStyle, textAlign: 'center', width: 36, padding: '8px 4px' }}>C</th>
@@ -53,6 +57,11 @@ export function DimensionTable({ dimensions }: Props) {
                 <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                   <ScorePill score={dim.score} />
                 </td>
+                {showDeltaColumn && (
+                  <td style={{ padding: '9px 12px', textAlign: 'center' }}>
+                    <DeltaPill delta={deltas?.[dim.key] ?? null} compact />
+                  </td>
+                )}
                 <td
                   style={{
                     padding: '9px 12px',

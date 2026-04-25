@@ -26,9 +26,11 @@ export default async function projectsRoutes(fastify: FastifyInstance): Promise<
       // Get latest report for this project
       const latestReport = await db
         .select({
+          id: reports.id,
           compositeScore: reports.compositeScore,
           commit: reports.commit,
           branch: reports.branch,
+          createdAt: reports.createdAt,
         })
         .from(reports)
         .innerJoin(projects, eq(reports.projectId, projects.id))
@@ -43,6 +45,51 @@ export default async function projectsRoutes(fastify: FastifyInstance): Promise<
         .innerJoin(projects, eq(reports.projectId, projects.id))
         .where(eq(projects.slug, row.slug));
 
+      let latestDelta: ScoreDelta | null = null;
+
+      if (latestReport.length > 0) {
+        const latest = latestReport[0];
+        const previousReports = await db
+          .select({ id: reports.id, compositeScore: reports.compositeScore })
+          .from(reports)
+          .innerJoin(projects, eq(reports.projectId, projects.id))
+          .where(
+            and(
+              eq(projects.slug, row.slug),
+              sql`${reports.createdAt} < ${latest.createdAt}`,
+            ),
+          )
+          .orderBy(desc(reports.createdAt))
+          .limit(1);
+
+        if (previousReports.length > 0) {
+          const previous = previousReports[0];
+          const [latestDims, previousDims] = await Promise.all([
+            db
+              .select({ key: dimensions.key, score: dimensions.score })
+              .from(dimensions)
+              .where(eq(dimensions.reportId, latest.id)),
+            db
+              .select({ key: dimensions.key, score: dimensions.score })
+              .from(dimensions)
+              .where(eq(dimensions.reportId, previous.id)),
+          ]);
+
+          const dimensionDeltas: Record<string, number> = {};
+          for (const dim of latestDims) {
+            const previousDim = previousDims.find((pd) => pd.key === dim.key);
+            if (previousDim && previousDim.score !== null && dim.score !== null) {
+              dimensionDeltas[dim.key] = dim.score - previousDim.score;
+            }
+          }
+
+          latestDelta = {
+            composite: latest.compositeScore - previous.compositeScore,
+            dimensions: dimensionDeltas,
+          };
+        }
+      }
+
       result.push({
         slug: row.slug,
         name: row.name,
@@ -51,6 +98,7 @@ export default async function projectsRoutes(fastify: FastifyInstance): Promise<
         latest_score: latestReport.length > 0 ? latestReport[0].compositeScore : null,
         latest_commit: latestReport.length > 0 ? latestReport[0].commit : null,
         latest_branch: latestReport.length > 0 ? latestReport[0].branch : null,
+        latest_delta: latestDelta,
         report_count: countResult[0].count,
       });
     }

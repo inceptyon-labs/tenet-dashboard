@@ -75,6 +75,7 @@ export interface ProjectListItem {
   latest_score: number | null;
   latest_commit: string | null;
   latest_branch: string | null;
+  latest_delta: ScoreDelta | null;
   report_count: number;
 }
 
