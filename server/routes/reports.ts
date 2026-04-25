@@ -6,6 +6,7 @@ import { requireAuth } from '../lib/auth.js';
 import { reportSchema } from '../lib/schema-validation.js';
 import { computeComposite, computeWeightedContribution } from '../lib/scoring.js';
 import { getDimensionWeight, normalizeDimensionWeights } from '../lib/dimensions.js';
+import { publishBadgeUpdate } from '../lib/badges.js';
 import type { DimensionWeights, ScoreDelta } from '../types.js';
 
 export default async function reportsRoutes(fastify: FastifyInstance): Promise<void> {
@@ -182,13 +183,25 @@ export default async function reportsRoutes(fastify: FastifyInstance): Promise<v
       };
     }
 
-    // 9. Return response
+    // 9. Publish public badge state when configured
+    const badgePublish = await publishBadgeUpdate({
+      projectSlug: payload.project.slug,
+      projectName: payload.project.name,
+      score: compositeScore,
+      branch: payload.project.branch,
+      commit: payload.project.commit,
+    });
+    if (!badgePublish.ok) {
+      fastify.log.warn({ badgePublish }, 'Failed to publish Tenet badge');
+    }
+
+    // 10. Return response
     return reply.status(201).send({
       report_id: reportId,
       project_slug: payload.project.slug,
       composite_score: compositeScore,
       delta,
-      dashboard_url: `/projects/${payload.project.slug}`,
+      dashboard_url: `/p/${encodeURIComponent(payload.project.slug)}`,
     });
   });
 }

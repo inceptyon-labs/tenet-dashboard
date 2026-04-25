@@ -4,6 +4,9 @@ dist/
 data/
 client/dist/
 *.tsbuildinfo
+.wrangler/
+badge-worker/.wrangler/
+badge-worker/.dev.vars*
 
 # Added by repo-ready
 .DS_Store

@@ -1,0 +1,17 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "tenet-badges",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-04-25",
+	"kv_namespaces": [
+		{
+			"binding": "TENET_BADGES",
+			"id": "66c2dd0be97f43de97d4903d94c865b2",
+			"preview_id": "ecc6ba18abf34bdb8aac5862dc933245"
+		}
+	],
+	"vars": {
+		"DASHBOARD_BASE_URL": "https://tenet.example.com",
+		"TENET_PROJECT_URL": "https://github.com/inceptyon-labs/tenet-skills"
+	}
+}

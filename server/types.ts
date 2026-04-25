@@ -64,6 +64,8 @@ export interface IngestPayload {
 export interface IngestResponse {
   report_id: string;
   project_slug: string;
+  composite_score: number;
+  delta: ScoreDelta | null;
   dashboard_url: string;
 }
 

@@ -105,6 +105,39 @@ cloudflared tunnel route dns tenet tenet.yourdomain.com
 cloudflared tunnel run tenet
 ```
 
+### 4. Public README badges (optional)
+
+The dashboard can stay private while a tiny Cloudflare Worker serves public badge SVGs from KV.
+
+```bash
+cd badge-worker
+npx wrangler kv namespace create TENET_BADGES
+npx wrangler kv namespace create TENET_BADGES --preview
+# Copy the IDs into badge-worker/wrangler.jsonc
+npx wrangler secret put BADGE_WRITE_TOKEN
+npx wrangler deploy
+```
+
+Then configure the dashboard with the Worker URL and the same write token:
+
+```bash
+TENET_BADGE_WORKER_URL=https://tenet-badges.yourdomain.com
+TENET_BADGE_WRITE_TOKEN=your-worker-write-token
+TENET_PUBLIC_DASHBOARD_URL=https://tenet.yourdomain.com
+```
+
+After the next report upload, add a badge to a repo README:
+
+```md
+[![Tenet Score](https://tenet-badges.yourdomain.com/api/v1/badges/my-project.svg)](https://tenet-badges.yourdomain.com/projects/my-project)
+```
+
+For Shields styling:
+
+```md
+![Tenet Score](https://img.shields.io/endpoint?url=https%3A%2F%2Ftenet-badges.yourdomain.com%2Fapi%2Fv1%2Fbadges%2Fmy-project%2Fshields.json)
+```
+
 ## Environment Variables
 
 | Variable | Required | Default | Description |
@@ -116,6 +149,9 @@ cloudflared tunnel run tenet
 | `HOST` | No | `0.0.0.0` | Server listen host |
 | `LOG_LEVEL` | No | `info` | Pino log level |
 | `NODE_ENV` | No | — | Set to `production` for static file serving |
+| `TENET_BADGE_WORKER_URL` | No | — | Public badge Worker base URL. If unset, badge publishing is skipped |
+| `TENET_BADGE_WRITE_TOKEN` | No | — | Bearer token used to publish score updates to the badge Worker |
+| `TENET_PUBLIC_DASHBOARD_URL` | No | — | Public dashboard base URL embedded in badge metadata |
 
 For Docker, `POSTGRES_PASSWORD` is also used by the Postgres container.
 
@@ -155,6 +191,7 @@ Snapshot the `./data/postgres` directory (Docker) or run `pg_dump` against your 
 
 - **Backend:** Node 20, Fastify 4, Drizzle ORM, Postgres 16+
 - **Frontend:** React 18, Vite 5, Tailwind CSS 3, Recharts 2
+- **Badges:** Cloudflare Worker + KV
 - **Deploy:** Docker, docker-compose, Cloudflare Tunnel
 
 ## Related
