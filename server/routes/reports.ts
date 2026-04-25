@@ -5,6 +5,7 @@ import { projects, reports, dimensions, findings, settings } from '../db/schema.
 import { requireAuth } from '../lib/auth.js';
 import { reportSchema } from '../lib/schema-validation.js';
 import { computeComposite, computeWeightedContribution } from '../lib/scoring.js';
+import { getDimensionWeight, normalizeDimensionWeights } from '../lib/dimensions.js';
 import type { DimensionWeights, ScoreDelta } from '../types.js';
 
 export default async function reportsRoutes(fastify: FastifyInstance): Promise<void> {
@@ -28,7 +29,9 @@ export default async function reportsRoutes(fastify: FastifyInstance): Promise<v
       .limit(1);
 
     const weightOverrides: DimensionWeights =
-      weightRow.length > 0 ? (weightRow[0].value as DimensionWeights) : {};
+      weightRow.length > 0
+        ? normalizeDimensionWeights(weightRow[0].value as DimensionWeights)
+        : normalizeDimensionWeights();
 
     // 3. Compute composite score
     const compositeScore = computeComposite(
@@ -86,14 +89,14 @@ export default async function reportsRoutes(fastify: FastifyInstance): Promise<v
     );
     let totalWeight = 0;
     for (const d of applicableDims) {
-      totalWeight += weightOverrides[d.key] ?? d.weight;
+      totalWeight += getDimensionWeight(d.key, weightOverrides, d.weight);
     }
 
     // Insert dimensions with computed weighted values
     if (payload.dimensions.length > 0) {
       await db.insert(dimensions).values(
         payload.dimensions.map((d) => {
-          const effectiveWeight = weightOverrides[d.key] ?? d.weight;
+          const effectiveWeight = getDimensionWeight(d.key, weightOverrides, d.weight);
           const weighted =
             d.applicable && d.score !== null
               ? computeWeightedContribution(d.score, effectiveWeight, totalWeight)

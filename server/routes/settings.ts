@@ -4,6 +4,7 @@ import { db } from '../db/client.js';
 import { settings, reports, dimensions, findings, dailySnapshots, projects } from '../db/schema.js';
 import { requireAuth } from '../lib/auth.js';
 import { runRetention } from '../jobs/retention.js';
+import { normalizeDimensionWeights } from '../lib/dimensions.js';
 
 export default async function settingsRoutes(fastify: FastifyInstance): Promise<void> {
   /**
@@ -17,6 +18,7 @@ export default async function settingsRoutes(fastify: FastifyInstance): Promise<
     for (const row of rows) {
       result[row.key] = row.value;
     }
+    result.dimension_weights = normalizeDimensionWeights(result.dimension_weights as Record<string, number> | undefined);
 
     return reply.send(result);
   });
@@ -33,7 +35,11 @@ export default async function settingsRoutes(fastify: FastifyInstance): Promise<
       return reply.status(400).send({ error: 'Body must be a JSON object' });
     }
 
-    for (const [key, value] of Object.entries(body)) {
+    for (const [key, rawValue] of Object.entries(body)) {
+      const value = key === 'dimension_weights'
+        ? normalizeDimensionWeights(rawValue as Record<string, number>)
+        : rawValue;
+
       await db
         .insert(settings)
         .values({
@@ -56,6 +62,7 @@ export default async function settingsRoutes(fastify: FastifyInstance): Promise<
     for (const row of rows) {
       result[row.key] = row.value;
     }
+    result.dimension_weights = normalizeDimensionWeights(result.dimension_weights as Record<string, number> | undefined);
 
     return reply.send(result);
   });

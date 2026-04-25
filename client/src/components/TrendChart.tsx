@@ -11,32 +11,10 @@ import {
 } from 'recharts';
 import { type TrendDay } from '../lib/api';
 import { colors, fontFamily } from '../lib/theme';
+import { dimensionColor, dimensionLabel } from '../lib/dimensions';
 
 interface Props {
   days: TrendDay[];
-}
-
-const DIMENSION_COLORS: Record<string, string> = {
-  Security: '#E24B4A',
-  Reliability: '#EF9F27',
-  Maintainability: '#378ADD',
-  Performance: '#97C459',
-  Complexity: '#A78BFA',
-  Documentation: '#F472B6',
-  Testing: '#34D399',
-  Style: '#FBBF24',
-};
-
-function getDimensionColor(name: string): string {
-  return DIMENSION_COLORS[name] ?? '#' + ((Math.abs(hashStr(name)) % 0xFFFFFF).toString(16).padStart(6, '0'));
-}
-
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  }
-  return h;
 }
 
 export function TrendChart({ days }: Props) {
@@ -120,7 +98,7 @@ export function TrendChart({ days }: Props) {
                 key={dim}
                 type="monotone"
                 dataKey={dim}
-                stroke={getDimensionColor(dim)}
+                stroke={dimensionColor(dim)}
                 strokeWidth={1.5}
                 dot={false}
                 strokeDasharray="4 2"
@@ -151,8 +129,8 @@ export function TrendChart({ days }: Props) {
         {allDimensions.map((dim) => (
           <LegendItem
             key={dim}
-            label={dim}
-            color={getDimensionColor(dim)}
+            label={dimensionLabel(dim)}
+            color={dimensionColor(dim)}
             active={!hidden.has(dim)}
             onClick={() => toggleLine(dim)}
           />

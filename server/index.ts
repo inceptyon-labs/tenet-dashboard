@@ -8,6 +8,7 @@ import { runMigrations } from './db/migrate.js';
 import { db } from './db/client.js';
 import { settings } from './db/schema.js';
 import { scheduleRetention } from './jobs/retention.js';
+import { DEFAULT_DIMENSION_WEIGHTS } from './lib/dimensions.js';
 import reportsRoutes from './routes/reports.js';
 import projectsRoutes from './routes/projects.js';
 import findingsRoutes from './routes/findings.js';
@@ -94,12 +95,7 @@ async function seedDefaultSettings(): Promise<void> {
   const defaults: Array<{ key: string; value: unknown }> = [
     {
       key: 'dimension_weights',
-      value: {
-        security: 1.5, secrets: 1.5, dependencies: 1.3, errors: 1.3,
-        solid: 1.1, complexity: 1.1, debt: 1.1, testing: 1.1,
-        performance: 1.0, api_contract: 1.0, observability: 1.0, build_ci: 1.0,
-        docs: 0.8, accessibility: 0.8,
-      },
+      value: DEFAULT_DIMENSION_WEIGHTS,
     },
     {
       key: 'retention',

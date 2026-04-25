@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { type FindingRow, type DimensionRow } from '../lib/api';
 import { colors, fontFamily, severityConfig, type SeverityLevel } from '../lib/theme';
+import { dimensionLabel } from '../lib/dimensions';
 import { FindingCard } from './FindingCard';
 import { Select } from './Select';
 import { ScorePill } from './ScorePill';
@@ -125,7 +126,7 @@ export function FindingsList({ findings, dimensions }: Props) {
           onChange={setDimensionFilter}
           options={[
             { value: 'all', label: 'All Dimensions' },
-            ...dimensionNames.map((d) => ({ value: d, label: d })),
+            ...dimensionNames.map((d) => ({ value: d, label: dimensionLabel(d) })),
           ]}
         />
 
@@ -209,7 +210,7 @@ export function FindingsList({ findings, dimensions }: Props) {
                   >
                     &#9654;
                   </span>
-                  {groupName}
+                  {dimensionLabel(groupName)}
                   {dimScore !== null && (
                     <ScorePill score={dimScore} />
                   )}

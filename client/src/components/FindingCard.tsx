@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { type FindingRow } from '../lib/api';
 import { colors, fontFamily } from '../lib/theme';
 import { copyFixPrompt } from '../lib/clipboard';
+import { dimensionLabel } from '../lib/dimensions';
 import { SeverityPill } from './SeverityPill';
 import { useToast } from '../App';
 
@@ -69,7 +70,7 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
           >
             {finding.title}
           </div>
-          {finding.file && (
+          {formatLocation(finding) && (
             <div
               style={{
                 fontFamily: fontFamily.mono,
@@ -78,7 +79,7 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
                 marginTop: 3,
               }}
             >
-              {finding.file}:{finding.line}:{finding.column}
+              {formatLocation(finding)}
             </div>
           )}
         </div>
@@ -152,6 +153,20 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
               }}
             >
               confidence: {finding.confidence ?? '---'}
+            </span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '2px 8px',
+                borderRadius: 5,
+                backgroundColor: 'rgba(255,255,255,0.04)',
+                color: colors.textMuted,
+                fontSize: 10,
+                fontFamily: fontFamily.mono,
+                marginLeft: 6,
+              }}
+            >
+              {dimensionLabel(finding.dimension_key)}
             </span>
           </div>
 
@@ -232,4 +247,12 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
       )}
     </div>
   );
+}
+
+function formatLocation(finding: FindingRow): string | null {
+  if (!finding.file) return null;
+  if (finding.line == null) return finding.file;
+  return finding.column == null
+    ? `${finding.file}:${finding.line}`
+    : `${finding.file}:${finding.line}:${finding.column}`;
 }

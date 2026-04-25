@@ -137,6 +137,10 @@ Write endpoints accept **either** `Authorization: Bearer $TENET_API_TOKEN` (used
 | `POST` | `/api/v1/admin/delete-expired` | Yes | Delete rolled-up reports |
 | `POST` | `/api/v1/admin/wipe-all` | Yes | Wipe all data (requires confirmation body) |
 
+### Report Compatibility
+
+The dashboard accepts the current Tenet report schema, including confidence tiers `deterministic`, `native`, `tree_sitter`, and `heuristic`. Uploaded findings must keep `finding.line` and the fix prompt `## Location` line in sync: use the exact 1-based line number for source-local findings, or `line: null` with `Line: N/A` for file-level/project-level findings.
+
 ## Data Retention
 
 Reports are retained in full for **90 days** (configurable in Settings). After that, a nightly cron job (3am) rolls them into daily score snapshots — preserving composite and dimension scores but dropping individual findings. Snapshots are retained for **730 days** by default.

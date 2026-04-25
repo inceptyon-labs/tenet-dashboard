@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchSettings, updateSettings, adminRollup, adminDeleteExpired, adminWipeAll } from '../lib/api';
 import { colors, fontFamily } from '../lib/theme';
+import { dimensionLabel, mergeDimensionWeights } from '../lib/dimensions';
 import { useToast } from '../App';
 import { TenetWordmark } from '../components/TenetWordmark';
 
@@ -47,7 +48,7 @@ export function Settings() {
         setSettings(s);
         setFullRetention(s.retention?.full_retention_days ?? 30);
         setSnapshotRetention(s.retention?.snapshot_retention_days ?? 365);
-        setWeights({ ...(s.dimension_weights ?? {}) });
+        setWeights(mergeDimensionWeights(s.dimension_weights));
       })
       .catch((e) => setError(e.message ?? 'Failed to load settings'))
       .finally(() => setLoading(false));
@@ -61,7 +62,7 @@ export function Settings() {
           full_retention_days: fullRetention,
           snapshot_retention_days: snapshotRetention,
         },
-        dimension_weights: weights,
+        dimension_weights: mergeDimensionWeights(weights),
       });
       const updated = parseSettings(raw);
       setSettings(updated);
@@ -79,7 +80,7 @@ export function Settings() {
     if (!settings) return;
     setFullRetention(settings.retention?.full_retention_days ?? 30);
     setSnapshotRetention(settings.retention?.snapshot_retention_days ?? 365);
-    setWeights({ ...(settings.dimension_weights ?? {}) });
+    setWeights(mergeDimensionWeights(settings.dimension_weights));
     setDirty(false);
   };
 
@@ -221,7 +222,7 @@ export function Settings() {
                   borderBottom: '0.5px solid rgba(255,255,255,0.03)',
                 }}
               >
-                <span style={{ color: colors.textSecondary, fontSize: 13, fontFamily: fontFamily.sans }}>{name}</span>
+                <span style={{ color: colors.textSecondary, fontSize: 13, fontFamily: fontFamily.sans }}>{dimensionLabel(name)}</span>
                 <input
                   type="number"
                   min={0}

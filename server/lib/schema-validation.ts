@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 export const severityEnum = z.enum(['critical', 'major', 'minor', 'info']);
+export const confidenceEnum = z.enum(['deterministic', 'native', 'tree_sitter', 'heuristic']);
+
+const fixPromptLinePattern = /^-\s*Line:\s*(.+)$/im;
 
 export const findingSchema = z.object({
   dimension: z.string(),
@@ -9,11 +12,41 @@ export const findingSchema = z.object({
   title: z.string().max(512),
   description: z.string().optional(),
   file: z.string().nullable().optional(),
-  line: z.number().int().nullable().optional(),
+  line: z.number().int().min(1).nullable().optional(),
   column: z.number().int().nullable().optional(),
   snippet: z.string().max(2000).nullable().optional(),
   fix_prompt: z.string().min(1),
-  confidence: z.enum(['deterministic', 'heuristic']).optional(),
+  confidence: confidenceEnum.optional(),
+}).superRefine((finding, ctx) => {
+  const match = finding.fix_prompt.match(fixPromptLinePattern);
+  if (!match) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['fix_prompt'],
+      message: 'fix_prompt Location must include a "- Line: ..." entry',
+    });
+    return;
+  }
+
+  const promptLine = match[1].trim();
+  if (finding.line == null) {
+    if (promptLine !== 'N/A') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['fix_prompt'],
+        message: 'fix_prompt Location line must be "N/A" when finding.line is null',
+      });
+    }
+    return;
+  }
+
+  if (promptLine !== String(finding.line)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['fix_prompt'],
+      message: `fix_prompt Location line must match finding.line (${finding.line})`,
+    });
+  }
 });
 
 export const dimensionSchema = z.object({
@@ -39,7 +72,7 @@ export const reportSchema = z.object({
     completed_at: z.string().datetime(),
     orchestrator_version: z.string(),
     dimensions_run: z.array(z.string()),
-    toolchain_summary: z.record(z.string()).optional(),
+    toolchain_summary: z.record(z.unknown()).optional(),
     lines_of_code: z.number().int().optional(),
     files_analyzed: z.number().int().optional(),
   }),

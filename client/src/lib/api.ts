@@ -102,7 +102,7 @@ export interface ReportDetail {
   composite_score: number;
   lines_of_code: number | null;
   files_analyzed: number | null;
-  toolchain_summary: Record<string, string> | null;
+  toolchain_summary: Record<string, unknown> | null;
   created_at: string;
   dimensions: DimensionRow[];
   findings: FindingRow[];

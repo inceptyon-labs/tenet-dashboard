@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProjects, type ProjectSummary } from '../lib/api';
 import { colors, fontFamily, relativeTime, getScoreConfig } from '../lib/theme';
+import { dimensionLabel } from '../lib/dimensions';
 import { DeltaPill } from '../components/DeltaPill';
 import { Select } from '../components/Select';
 import { useToast } from '../App';
@@ -328,10 +329,11 @@ function getTopDimensionChanges(deltas?: Record<string, number> | null): Array<{
 function DimensionDeltaChip({ name, delta }: { name: string; delta: number }) {
   const improved = delta > 0;
   const color = improved ? '#4ADE80' : '#F09595';
+  const label = dimensionLabel(name);
 
   return (
     <span
-      title={`${name} ${improved ? 'improved' : 'degraded'} by ${Math.abs(delta)} points`}
+      title={`${label} ${improved ? 'improved' : 'degraded'} by ${Math.abs(delta)} points`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -345,7 +347,7 @@ function DimensionDeltaChip({ name, delta }: { name: string; delta: number }) {
       <span style={{ color, fontFamily: fontFamily.mono, fontWeight: 600 }}>
         {delta > 0 ? `+${delta}` : delta}
       </span>
-      <span>{name}</span>
+      <span>{label}</span>
     </span>
   );
 }

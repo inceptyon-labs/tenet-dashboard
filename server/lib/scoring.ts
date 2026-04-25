@@ -1,4 +1,5 @@
 import type { Grade } from '../types.js';
+import { getDimensionWeight } from './dimensions.js';
 
 /**
  * Compute the composite score from an array of dimension results.
@@ -16,7 +17,7 @@ export function computeComposite(
   let totalWeight = 0;
 
   for (const d of applicable) {
-    const weight = weightOverrides[d.key] ?? 1.0;
+    const weight = getDimensionWeight(d.key, weightOverrides);
     totalWeighted += d.score! * weight;
     totalWeight += weight;
   }

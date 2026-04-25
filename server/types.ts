@@ -5,7 +5,7 @@
 // ── Dimension / Finding severity ──────────────────────────────
 
 export type Severity = 'critical' | 'major' | 'minor' | 'info';
-export type Confidence = 'deterministic' | 'heuristic';
+export type Confidence = 'deterministic' | 'native' | 'tree_sitter' | 'heuristic';
 export type Grade = 'A' | 'B' | 'C' | 'F';
 
 // ── Ingest payload (mirrors Zod schemas) ──────────────────────
@@ -23,7 +23,7 @@ export interface IngestRun {
   completed_at: string;
   orchestrator_version: string;
   dimensions_run: string[];
-  toolchain_summary?: Record<string, string>;
+  toolchain_summary?: Record<string, unknown>;
   lines_of_code?: number;
   files_analyzed?: number;
 }

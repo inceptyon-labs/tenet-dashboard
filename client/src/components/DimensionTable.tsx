@@ -1,4 +1,5 @@
 import { type DimensionRow } from '../lib/api';
+import { dimensionLabel } from '../lib/dimensions';
 import { getScoreConfig, colors, fontFamily } from '../lib/theme';
 import { DeltaPill } from './DeltaPill';
 import { ScorePill } from './ScorePill';
@@ -52,7 +53,7 @@ export function DimensionTable({ dimensions, deltas }: Props) {
                 style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}
               >
                 <td style={{ padding: '9px 12px', color: colors.textPrimary, fontFamily: fontFamily.sans, fontSize: 13, fontWeight: 500 }}>
-                  {dim.key}
+                  {dimensionLabel(dim.key)}
                 </td>
                 <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                   <ScorePill score={dim.score} />
@@ -99,7 +100,7 @@ export function DimensionTable({ dimensions, deltas }: Props) {
                 <td style={{ padding: '9px 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 11, color: colors.textSecondary, fontFamily: fontFamily.sans, whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right' }}>
-                      {dim.key}
+                      {dimensionLabel(dim.key)}
                     </span>
                     <div
                       style={{

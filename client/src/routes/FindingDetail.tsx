@@ -4,6 +4,7 @@ import { fetchFinding, type FindingRow } from '../lib/api';
 import { colors, fontFamily, severityConfig } from '../lib/theme';
 import { SeverityPill } from '../components/SeverityPill';
 import { copyFixPrompt } from '../lib/clipboard';
+import { dimensionLabel } from '../lib/dimensions';
 import { useToast } from '../App';
 import { TenetWordmark } from '../components/TenetWordmark';
 
@@ -79,7 +80,7 @@ export function FindingDetail() {
             {finding.rule}
           </span>
           <span style={{ fontFamily: fontFamily.mono, fontSize: 10, color: colors.textMuted }}>
-            {finding.dimension_key}
+            {dimensionLabel(finding.dimension_key)}
           </span>
         </div>
 
@@ -100,7 +101,7 @@ export function FindingDetail() {
             display: 'inline-block',
           }}
         >
-          {finding.file}:{finding.line}:{finding.column}
+          {formatLocation(finding)}
         </div>
 
         {/* Description */}
@@ -199,4 +200,12 @@ export function FindingDetail() {
       </div>
     </div>
   );
+}
+
+function formatLocation(finding: FindingRow): string {
+  if (!finding.file) return 'Project-level finding';
+  if (finding.line == null) return finding.file;
+  return finding.column == null
+    ? `${finding.file}:${finding.line}`
+    : `${finding.file}:${finding.line}:${finding.column}`;
 }
