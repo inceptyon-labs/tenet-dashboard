@@ -12,6 +12,7 @@ import { CompositeScoreRing } from '../components/CompositeScoreRing';
 import { DeltaPill } from '../components/DeltaPill';
 import { DimensionTable } from '../components/DimensionTable';
 import { FindingsList } from '../components/FindingsList';
+import { MutationTestingPanel, extractMutationMetrics } from '../components/MutationTestingPanel';
 import { TenetWordmark } from '../components/TenetWordmark';
 
 function computeDurationMs(startedAt: string, completedAt: string): number | null {
@@ -100,6 +101,8 @@ export function ProjectDetail() {
   }
 
   const durationMs = computeDurationMs(data.started_at, data.completed_at);
+  const testingDimension = data.dimensions.find((dimension) => dimension.key === 'testing');
+  const mutationMetrics = extractMutationMetrics(testingDimension?.metrics);
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
@@ -215,6 +218,10 @@ export function ProjectDetail() {
         </div>
         <DimensionTable dimensions={data.dimensions} deltas={data.delta?.dimensions} />
       </div>
+
+      {mutationMetrics && (
+        <MutationTestingPanel metrics={mutationMetrics} />
+      )}
 
       {/* Severity summary */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>

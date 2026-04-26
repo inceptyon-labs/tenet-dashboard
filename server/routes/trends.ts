@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { projects, reports, dimensions, dailySnapshots } from '../db/schema.js';
-import type { TrendDay } from '../types.js';
+import type { MutationTrendPoint, TrendDay } from '../types.js';
 
 export default async function trendsRoutes(fastify: FastifyInstance): Promise<void> {
   /**
@@ -72,6 +72,7 @@ export default async function trendsRoutes(fastify: FastifyInstance): Promise<vo
         composite: snap.compositeScore,
         dimensions: (snap.dimensionScores ?? {}) as Record<string, number>,
         counts: (snap.findingCounts ?? {}) as Record<string, number>,
+        mutation: null,
       });
     }
 
@@ -81,16 +82,20 @@ export default async function trendsRoutes(fastify: FastifyInstance): Promise<vo
 
       // Get dimensions for this report
       const dimRows = await db
-        .select({ key: dimensions.key, score: dimensions.score, counts: dimensions.counts })
+        .select({ key: dimensions.key, score: dimensions.score, counts: dimensions.counts, metrics: dimensions.metrics })
         .from(dimensions)
         .where(eq(dimensions.reportId, report.id));
 
       const dimScores: Record<string, number> = {};
       const counts: Record<string, number> = {};
+      let mutation: MutationTrendPoint | null = null;
 
       for (const d of dimRows) {
         if (d.score !== null) {
           dimScores[d.key] = d.score;
+        }
+        if (d.key === 'testing') {
+          mutation = extractMutationTrend(d.metrics);
         }
         if (d.counts && typeof d.counts === 'object') {
           const c = d.counts as Record<string, number>;
@@ -106,6 +111,7 @@ export default async function trendsRoutes(fastify: FastifyInstance): Promise<vo
         composite: report.compositeScore,
         dimensions: dimScores,
         counts,
+        mutation,
       });
     }
 
@@ -114,4 +120,44 @@ export default async function trendsRoutes(fastify: FastifyInstance): Promise<vo
 
     return reply.send({ days });
   });
+}
+
+function extractMutationTrend(metrics: unknown): MutationTrendPoint | null {
+  if (!isPlainObject(metrics)) return null;
+
+  const available = metrics.mutation_available === true;
+  const scorePct = readNumber(metrics.mutation_score_pct);
+  const total = readNumber(metrics.mutation_mutants_total);
+  const killed = readNumber(metrics.mutation_mutants_killed);
+  const survived = readNumber(metrics.mutation_mutants_survived);
+  const timedOut = readNumber(metrics.mutation_mutants_timed_out);
+
+  if (!available && scorePct === null && total === null && killed === null && survived === null && timedOut === null) {
+    return null;
+  }
+
+  return {
+    available,
+    provider: readString(metrics.mutation_provider),
+    score_pct: scorePct,
+    rating: readString(metrics.mutation_rating),
+    killed,
+    survived,
+    timed_out: timedOut,
+    total,
+    scope: readString(metrics.mutation_scope),
+    bonus_applied: readNumber(metrics.mutation_bonus_applied),
+  };
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function readString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value : null;
 }

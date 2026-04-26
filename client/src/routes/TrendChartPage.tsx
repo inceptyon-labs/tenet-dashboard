@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchTrends, type TrendDay } from '../lib/api';
 import { colors, fontFamily } from '../lib/theme';
+import { MutationTrendPanel } from '../components/MutationTestingPanel';
 import { TrendChart } from '../components/TrendChart';
 import { TenetWordmark } from '../components/TenetWordmark';
 
@@ -50,16 +51,19 @@ export function TrendChartPage() {
       )}
 
       {!loading && !error && days.length > 0 && (
-        <div
-          style={{
-            backgroundColor: colors.card,
-            border: colors.cardBorder,
-            borderRadius: 10,
-            padding: 20,
-          }}
-        >
-          <TrendChart days={days} />
-        </div>
+        <>
+          <div
+            style={{
+              backgroundColor: colors.card,
+              border: colors.cardBorder,
+              borderRadius: 10,
+              padding: 20,
+            }}
+          >
+            <TrendChart days={days} />
+          </div>
+          <MutationTrendPanel days={days} />
+        </>
       )}
     </div>
   );

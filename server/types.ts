@@ -133,6 +133,19 @@ export interface ScoreDelta {
   dimensions: Record<string, number>;
 }
 
+export interface MutationTrendPoint {
+  available: boolean;
+  provider: string | null;
+  score_pct: number | null;
+  rating: string | null;
+  killed: number | null;
+  survived: number | null;
+  timed_out: number | null;
+  total: number | null;
+  scope: string | null;
+  bonus_applied: number | null;
+}
+
 export interface ReportListItem {
   id: string;
   commit: string;
@@ -148,6 +161,7 @@ export interface TrendDay {
   composite: number;
   dimensions: Record<string, number>;
   counts: Record<string, number>;
+  mutation?: MutationTrendPoint | null;
 }
 
 export interface TrendResponse {
