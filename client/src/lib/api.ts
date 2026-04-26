@@ -57,6 +57,17 @@ export interface ProjectSummary {
   report_count: number;
 }
 
+export type CheckStatus = 'passed' | 'failed' | 'skipped' | 'info';
+
+export interface DimensionCheck {
+  name: string;
+  status: CheckStatus;
+  description?: string;
+  details?: string;
+  count?: number | null;
+  tool?: string;
+}
+
 export interface DimensionRow {
   id: string;
   key: string;
@@ -68,6 +79,7 @@ export interface DimensionRow {
   notes: string | null;
   metrics: unknown;
   counts: Record<string, number> | null;
+  checks: DimensionCheck[] | null;
 }
 
 export interface FindingRow {

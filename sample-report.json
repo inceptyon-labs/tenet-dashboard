@@ -19,11 +19,87 @@
     "files_analyzed": 142
   },
   "dimensions": [
-    { "key": "security", "score": 95, "weight": 1.5, "applicable": true, "skill_version": "1.2.0", "notes": "One critical-path security issue detected.", "metrics": { "files_scanned": 142 } },
-    { "key": "privacy-data", "score": 98, "weight": 1.3, "applicable": true, "skill_version": "1.0.0", "notes": "PII surface detected; one logging issue found.", "metrics": { "pii_field_count": 8 } },
-    { "key": "supply-chain-license", "score": 100, "weight": 1.2, "applicable": true, "skill_version": "1.0.0", "notes": "SBOM generation and lockfiles present.", "metrics": { "sbom_present": true } },
-    { "key": "infra-cloud", "score": null, "weight": 1.2, "applicable": false, "skill_version": "1.0.0", "notes": "No IaC or cloud deployment config detected.", "metrics": {} },
-    { "key": "release-ops", "score": 98, "weight": 1.0, "applicable": true, "skill_version": "1.0.0", "notes": "Release workflow present; rollback runbook is incomplete.", "metrics": { "deployment_workflow_count": 1 } }
+    {
+      "key": "security",
+      "score": 95,
+      "weight": 1.5,
+      "applicable": true,
+      "skill_version": "1.2.0",
+      "notes": "One critical-path security issue detected.",
+      "metrics": { "files_scanned": 142, "rules_evaluated": 187 },
+      "checks": [
+        { "name": "SQL injection patterns", "status": "failed", "tool": "semgrep", "count": 1, "description": "Scanned all data-access files for unsafe query interpolation." },
+        { "name": "Cross-site scripting (reflected/stored)", "status": "passed", "tool": "semgrep", "count": 142, "description": "Checked HTML rendering paths and template engines for unescaped output." },
+        { "name": "Insecure deserialization", "status": "passed", "tool": "semgrep", "description": "Checked YAML/pickle/eval call sites." },
+        { "name": "Hardcoded crypto secrets", "status": "passed", "tool": "semgrep", "description": "Checked for inline keys, IVs, and secrets passed to crypto APIs." },
+        { "name": "Auth bypass on sensitive routes", "status": "passed", "description": "Verified that admin and write routes attach an auth middleware before the handler." },
+        { "name": "CORS wildcard with credentials", "status": "passed", "description": "Checked CORS configuration for `Access-Control-Allow-Origin: *` combined with credentials." },
+        { "name": "Open redirect", "status": "passed", "description": "Inspected redirect handlers for unvalidated user-supplied destinations." }
+      ]
+    },
+    {
+      "key": "privacy-data",
+      "score": 98,
+      "weight": 1.3,
+      "applicable": true,
+      "skill_version": "1.0.0",
+      "notes": "PII surface detected; one logging issue found.",
+      "metrics": { "pii_field_count": 8, "log_call_sites": 47 },
+      "checks": [
+        { "name": "PII fields enumerated", "status": "info", "count": 8, "description": "Identified email, phone, and address fields in user models.", "details": "users.email\nusers.phone\nusers.address_line_1\nusers.address_line_2\nusers.city\nusers.region\nusers.postal_code\nusers.country" },
+        { "name": "PII in log statements", "status": "failed", "count": 1, "description": "Looked for direct logging of email, phone, SSN, or token fields.", "details": "src/routes/auth.ts:23 — logs `email` on failed login" },
+        { "name": "Data deletion endpoint present", "status": "passed", "description": "Confirmed an account deletion route exists and cascades user-owned records." },
+        { "name": "Data export endpoint present", "status": "passed", "description": "Confirmed a user-initiated data export route exists." },
+        { "name": "Consent/retention configuration", "status": "skipped", "description": "No consent registry detected; not required for internal-only services." }
+      ]
+    },
+    {
+      "key": "supply-chain-license",
+      "score": 100,
+      "weight": 1.2,
+      "applicable": true,
+      "skill_version": "1.0.0",
+      "notes": "SBOM generation and lockfiles present.",
+      "metrics": { "sbom_present": true, "lockfile_count": 1, "package_count": 218 },
+      "checks": [
+        { "name": "Lockfile present and committed", "status": "passed", "tool": "syft", "description": "package-lock.json found at repo root and tracked in git." },
+        { "name": "SBOM generated", "status": "passed", "tool": "syft", "count": 218, "description": "Syft produced an SPDX SBOM listing 218 packages." },
+        { "name": "GitHub Actions pinned to SHA", "status": "passed", "description": "All third-party actions in workflows reference an immutable commit SHA." },
+        { "name": "Container base images pinned", "status": "passed", "description": "Dockerfile FROM directives include a digest." },
+        { "name": "License compatibility scan", "status": "passed", "count": 218, "description": "All resolved packages use licenses compatible with the project license (MIT)." },
+        { "name": "Dependency confusion guard", "status": "passed", "description": "No internal scopes resolve from public registries." }
+      ]
+    },
+    {
+      "key": "infra-cloud",
+      "score": null,
+      "weight": 1.2,
+      "applicable": false,
+      "skill_version": "1.0.0",
+      "notes": "No IaC or cloud deployment config detected.",
+      "metrics": {},
+      "checks": [
+        { "name": "Terraform / OpenTofu config", "status": "skipped", "description": "No .tf files found." },
+        { "name": "Kubernetes manifests", "status": "skipped", "description": "No k8s/, helm/, or kustomize/ directories found." },
+        { "name": "Cloud provider SDK usage", "status": "skipped", "description": "No AWS/GCP/Azure SDKs in dependencies." }
+      ]
+    },
+    {
+      "key": "release-ops",
+      "score": 98,
+      "weight": 1.0,
+      "applicable": true,
+      "skill_version": "1.0.0",
+      "notes": "Release workflow present; rollback runbook is incomplete.",
+      "metrics": { "deployment_workflow_count": 1, "feature_flag_provider": "none" },
+      "checks": [
+        { "name": "Deployment workflow defined", "status": "passed", "count": 1, "description": ".github/workflows/deploy.yml found." },
+        { "name": "Rollback runbook covers app image", "status": "passed", "description": "docs/release.md describes redeploying the previous image tag." },
+        { "name": "Rollback runbook covers DB migrations", "status": "failed", "description": "docs/release.md does not describe migration rollback or forward-fix decision criteria." },
+        { "name": "Smoke checks defined post-deploy", "status": "passed", "description": "deploy.yml runs a health check against /healthz after rollout." },
+        { "name": "Feature-flag kill switch", "status": "info", "description": "No feature-flag provider configured. This is not a failure but limits granular rollback." }
+      ]
+    }
   ],
   "findings": [
     {

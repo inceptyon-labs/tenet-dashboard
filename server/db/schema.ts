@@ -40,6 +40,7 @@ export const dimensions = pgTable('dimensions', {
   notes: text('notes'),
   metrics: jsonb('metrics'),
   counts: jsonb('counts'),
+  checks: jsonb('checks'),
 }, (t) => ({
   byReport: index('dimensions_report_idx').on(t.reportId),
 }));

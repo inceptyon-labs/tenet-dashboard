@@ -49,8 +49,11 @@ CREATE TABLE IF NOT EXISTS dimensions (
   skill_version VARCHAR(32),
   notes         TEXT,
   metrics       JSONB,
-  counts        JSONB
+  counts        JSONB,
+  checks        JSONB
 );
+
+ALTER TABLE dimensions ADD COLUMN IF NOT EXISTS checks JSONB;
 
 CREATE INDEX IF NOT EXISTS dimensions_report_idx ON dimensions (report_id);
 

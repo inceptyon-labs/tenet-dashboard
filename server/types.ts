@@ -6,7 +6,17 @@
 
 export type Severity = 'critical' | 'major' | 'minor' | 'info';
 export type Confidence = 'deterministic' | 'native' | 'tree_sitter' | 'heuristic';
+export type CheckStatus = 'passed' | 'failed' | 'skipped' | 'info';
 export type Grade = 'A' | 'B' | 'C' | 'F';
+
+export interface DimensionCheck {
+  name: string;
+  status: CheckStatus;
+  description?: string;
+  details?: string;
+  count?: number | null;
+  tool?: string;
+}
 
 // ── Ingest payload (mirrors Zod schemas) ──────────────────────
 
@@ -36,6 +46,7 @@ export interface IngestDimension {
   skill_version?: string;
   notes?: string;
   metrics?: Record<string, unknown>;
+  checks?: DimensionCheck[];
 }
 
 export interface IngestFinding {
@@ -92,6 +103,7 @@ export interface DimensionRow {
   notes: string | null;
   metrics: unknown;
   counts: unknown;
+  checks: DimensionCheck[] | null;
 }
 
 export interface FindingRow {

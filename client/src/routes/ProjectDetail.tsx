@@ -216,7 +216,12 @@ export function ProjectDetail() {
               : 'Baseline report'}
           </div>
         </div>
-        <DimensionTable dimensions={data.dimensions} deltas={data.delta?.dimensions} />
+        <DimensionTable
+          dimensions={data.dimensions}
+          deltas={data.delta?.dimensions}
+          findings={data.findings}
+          toolchainSummary={data.toolchain_summary}
+        />
       </div>
 
       {mutationMetrics && (

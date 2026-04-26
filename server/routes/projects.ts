@@ -171,6 +171,7 @@ export default async function projectsRoutes(fastify: FastifyInstance): Promise<
       notes: d.notes,
       metrics: d.metrics,
       counts: d.counts,
+      checks: (d.checks as DimensionRow['checks']) ?? null,
     }));
 
     // Get findings

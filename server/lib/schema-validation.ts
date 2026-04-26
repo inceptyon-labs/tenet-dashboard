@@ -2,6 +2,16 @@ import { z } from 'zod';
 
 export const severityEnum = z.enum(['critical', 'major', 'minor', 'info']);
 export const confidenceEnum = z.enum(['deterministic', 'native', 'tree_sitter', 'heuristic']);
+export const checkStatusEnum = z.enum(['passed', 'failed', 'skipped', 'info']);
+
+export const dimensionCheckSchema = z.object({
+  name: z.string().max(256),
+  status: checkStatusEnum,
+  description: z.string().max(1000).optional(),
+  details: z.string().max(4000).optional(),
+  count: z.number().int().nullable().optional(),
+  tool: z.string().max(64).optional(),
+});
 
 const fixPromptLinePattern = /^-\s*Line:\s*(.+)$/im;
 
@@ -57,6 +67,7 @@ export const dimensionSchema = z.object({
   skill_version: z.string().optional(),
   notes: z.string().optional(),
   metrics: z.record(z.unknown()).optional(),
+  checks: z.array(dimensionCheckSchema).optional(),
 });
 
 export const reportSchema = z.object({
@@ -83,3 +94,4 @@ export const reportSchema = z.object({
 export type ReportPayload = z.infer<typeof reportSchema>;
 export type DimensionPayload = z.infer<typeof dimensionSchema>;
 export type FindingPayload = z.infer<typeof findingSchema>;
+export type DimensionCheckPayload = z.infer<typeof dimensionCheckSchema>;

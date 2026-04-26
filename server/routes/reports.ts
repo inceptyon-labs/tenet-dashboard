@@ -121,6 +121,7 @@ export default async function reportsRoutes(fastify: FastifyInstance): Promise<v
             notes: d.notes ?? null,
             metrics: d.metrics ?? null,
             counts: Object.keys(counts).length > 0 ? counts : null,
+            checks: d.checks && d.checks.length > 0 ? d.checks : null,
           };
         }),
       );
