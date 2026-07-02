@@ -37,6 +37,8 @@ export default async function findingsRoutes(fastify: FastifyInstance): Promise<
       snippet: f.snippet,
       fix_prompt: f.fixPrompt,
       confidence: f.confidence,
+      suppressed: f.suppressed,
+      suppressed_reason: f.suppressedReason,
     });
   });
 }

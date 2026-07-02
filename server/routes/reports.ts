@@ -130,20 +130,32 @@ export default async function reportsRoutes(fastify: FastifyInstance): Promise<v
     // 7. Insert findings
     if (payload.findings.length > 0) {
       await db.insert(findings).values(
-        payload.findings.map((f) => ({
-          reportId,
-          dimensionKey: f.dimension,
-          severity: f.severity,
-          rule: f.rule ?? null,
-          title: f.title,
-          description: f.description ?? null,
-          file: f.file ?? null,
-          line: f.line ?? null,
-          column: f.column ?? null,
-          snippet: f.snippet ?? null,
-          fixPrompt: f.fix_prompt,
-          confidence: f.confidence ?? null,
-        })),
+        payload.findings.map((f) => {
+          const description = f.description ?? null;
+          // A finding is an "accepted risk" if the skill set the explicit flag, or (for older
+          // reports) if it followed the `Suppressed: <reason>` description convention.
+          const descMatch = /(?:^|\n)\s*suppressed:\s*(.+)/i.exec(description ?? '');
+          const suppressed = f.suppressed === true || descMatch !== null;
+          const suppressedReason = suppressed
+            ? (f.suppressed_reason ?? descMatch?.[1]?.trim() ?? null)
+            : null;
+          return {
+            reportId,
+            dimensionKey: f.dimension,
+            severity: f.severity,
+            rule: f.rule ?? null,
+            title: f.title,
+            description,
+            file: f.file ?? null,
+            line: f.line ?? null,
+            column: f.column ?? null,
+            snippet: f.snippet ?? null,
+            fixPrompt: f.fix_prompt,
+            confidence: f.confidence ?? null,
+            suppressed,
+            suppressedReason,
+          };
+        }),
       );
     }
 

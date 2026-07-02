@@ -1,6 +1,7 @@
 export const DEFAULT_DIMENSION_WEIGHTS: Record<string, number> = {
   security: 1.5,
   secrets: 1.5,
+  correctness: 1.3,
   'privacy-data': 1.3,
   dependencies: 1.3,
   errors: 1.3,
@@ -23,6 +24,7 @@ export const DEFAULT_DIMENSION_WEIGHTS: Record<string, number> = {
 export const DIMENSION_LABELS: Record<string, string> = {
   security: 'Security',
   secrets: 'Secrets',
+  correctness: 'Correctness',
   'privacy-data': 'Privacy & Data',
   dependencies: 'Dependencies',
   errors: 'Errors',
@@ -45,6 +47,7 @@ export const DIMENSION_LABELS: Record<string, string> = {
 export const DIMENSION_COLORS: Record<string, string> = {
   security: '#E24B4A',
   secrets: '#F09595',
+  correctness: '#F87171',
   'privacy-data': '#FB7185',
   dependencies: '#EF9F27',
   errors: '#FAC775',

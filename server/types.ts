@@ -61,6 +61,8 @@ export interface IngestFinding {
   snippet?: string | null;
   fix_prompt: string;
   confidence?: Confidence;
+  suppressed?: boolean;
+  suppressed_reason?: string | null;
 }
 
 export interface IngestPayload {
@@ -119,6 +121,8 @@ export interface FindingRow {
   snippet: string | null;
   fix_prompt: string;
   confidence: string | null;
+  suppressed: boolean;
+  suppressed_reason: string | null;
 }
 
 export interface ReportDetail {

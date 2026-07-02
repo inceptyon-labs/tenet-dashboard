@@ -95,6 +95,8 @@ export interface FindingRow {
   snippet: string | null;
   fix_prompt: string;
   confidence: string | null;
+  suppressed?: boolean;
+  suppressed_reason?: string | null;
 }
 
 export interface ScoreDelta {

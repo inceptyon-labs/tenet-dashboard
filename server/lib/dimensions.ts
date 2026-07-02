@@ -1,6 +1,7 @@
 export const DEFAULT_DIMENSION_WEIGHTS: Record<string, number> = {
   security: 1.5,
   secrets: 1.5,
+  correctness: 1.3,
   'privacy-data': 1.3,
   dependencies: 1.3,
   errors: 1.3,

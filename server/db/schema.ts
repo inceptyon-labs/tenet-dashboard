@@ -59,6 +59,8 @@ export const findings = pgTable('findings', {
   snippet: text('snippet'),
   fixPrompt: text('fix_prompt').notNull(),
   confidence: varchar('confidence', { length: 16 }),
+  suppressed: boolean('suppressed').notNull().default(false),
+  suppressedReason: text('suppressed_reason'),
 }, (t) => ({
   byReport: index('findings_report_idx').on(t.reportId, t.severity),
   byDimension: index('findings_dimension_idx').on(t.reportId, t.dimensionKey),

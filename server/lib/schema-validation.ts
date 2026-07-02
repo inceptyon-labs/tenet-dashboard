@@ -27,6 +27,8 @@ export const findingSchema = z.object({
   snippet: z.string().max(2000).nullable().optional(),
   fix_prompt: z.string().min(1),
   confidence: confidenceEnum.optional(),
+  suppressed: z.boolean().optional(),
+  suppressed_reason: z.string().nullable().optional(),
 }).superRefine((finding, ctx) => {
   const match = finding.fix_prompt.match(fixPromptLinePattern);
   if (!match) {

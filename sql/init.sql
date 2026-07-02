@@ -75,6 +75,9 @@ CREATE TABLE IF NOT EXISTS findings (
   confidence     VARCHAR(16)
 );
 
+ALTER TABLE findings ADD COLUMN IF NOT EXISTS suppressed BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE findings ADD COLUMN IF NOT EXISTS suppressed_reason TEXT;
+
 CREATE INDEX IF NOT EXISTS findings_report_idx ON findings (report_id, severity);
 CREATE INDEX IF NOT EXISTS findings_dimension_idx ON findings (report_id, dimension_key);
 
@@ -103,7 +106,7 @@ CREATE TABLE IF NOT EXISTS settings (
 -- ── Seed default settings ─────────────────────────────────────
 
 INSERT INTO settings (key, value)
-VALUES ('dimension_weights', '{"security": 1.5, "secrets": 1.5, "privacy-data": 1.3, "dependencies": 1.3, "errors": 1.3, "supply-chain-license": 1.2, "infra-cloud": 1.2, "solid": 1.1, "complexity": 1.1, "debt": 1.1, "testing": 1.1, "database-migrations": 1.1, "performance": 1.0, "api-contract": 1.0, "observability": 1.0, "build-ci": 1.0, "release-ops": 1.0, "docs": 0.8, "accessibility": 0.8}'::jsonb)
+VALUES ('dimension_weights', '{"security": 1.5, "secrets": 1.5, "correctness": 1.3, "privacy-data": 1.3, "dependencies": 1.3, "errors": 1.3, "supply-chain-license": 1.2, "infra-cloud": 1.2, "solid": 1.1, "complexity": 1.1, "debt": 1.1, "testing": 1.1, "database-migrations": 1.1, "performance": 1.0, "api-contract": 1.0, "observability": 1.0, "build-ci": 1.0, "release-ops": 1.0, "docs": 0.8, "accessibility": 0.8}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value)

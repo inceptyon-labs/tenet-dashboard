@@ -28,6 +28,7 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
         border: colors.cardBorder,
         borderRadius: 10,
         overflow: 'hidden',
+        opacity: finding.suppressed ? 0.62 : 1,
       }}
     >
       {/* Header row */}
@@ -57,6 +58,30 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
             >
               {finding.rule}
             </span>
+            {finding.suppressed && (
+              <span
+                title={finding.suppressed_reason ?? 'Accepted risk — suppressed, excluded from the score'}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '1px 7px',
+                  borderRadius: 5,
+                  backgroundColor: 'rgba(148,163,184,0.14)',
+                  border: '1px solid rgba(148,163,184,0.25)',
+                  color: colors.textMuted,
+                  fontSize: 9,
+                  fontFamily: fontFamily.sans,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                ✓ Accepted risk
+              </span>
+            )}
           </div>
           <div
             style={{
@@ -134,6 +159,30 @@ export function FindingCard({ finding, defaultOpen = false }: Props) {
             animation: 'fade-in 0.15s ease-out',
           }}
         >
+          {/* Accepted-risk reason */}
+          {finding.suppressed && (
+            <div
+              style={{
+                margin: '12px 0 0',
+                padding: '8px 10px',
+                borderRadius: 6,
+                backgroundColor: 'rgba(148,163,184,0.08)',
+                border: '1px solid rgba(148,163,184,0.18)',
+                fontFamily: fontFamily.sans,
+                fontSize: 11,
+                lineHeight: 1.5,
+                color: colors.textSecondary,
+              }}
+            >
+              <span style={{ color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.6px', fontSize: 9, fontWeight: 600 }}>
+                Accepted risk
+              </span>
+              <span style={{ marginLeft: 8 }}>
+                {finding.suppressed_reason ?? 'Suppressed by configuration — excluded from the score.'}
+              </span>
+            </div>
+          )}
+
           {/* Description */}
           <p style={{ color: colors.textSecondary, margin: '12px 0 10px', lineHeight: 1.6, fontFamily: fontFamily.sans, fontSize: 12 }}>
             {finding.description}

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Correctness dimension** — registered `correctness` in the server and client dimension registries (default weight 1.3, label "Correctness", color `#F87171`) and in the seeded `dimension_weights`, so reports from the new `tenet-correctness` skill render first-class.
+- **Accepted-risk badge** — findings the audit suppressed (via `tenet-ignore` comments or `[suppressions]` config) now carry `suppressed` / `suppressed_reason`. The finding card shows an "✓ Accepted risk" badge, dims the card, and displays the acceptance reason. New `findings.suppressed` / `findings.suppressed_reason` columns (auto-added via `ALTER TABLE ... IF NOT EXISTS`); ingest also derives the flag from the legacy `Suppressed: <reason>` description convention for back-compatibility.
+
 ## [1.0.0] - 2026-04-17
 
 ### Added

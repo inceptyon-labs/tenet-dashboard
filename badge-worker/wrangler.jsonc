@@ -11,7 +11,7 @@
 		}
 	],
 	"vars": {
-		"DASHBOARD_BASE_URL": "https://tenet.example.com",
+		"DASHBOARD_BASE_URL": "https://tenet.inceptyon.io",
 		"TENET_PROJECT_URL": "https://github.com/inceptyon-labs/tenet-skills"
 	}
 }

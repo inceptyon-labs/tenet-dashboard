@@ -193,6 +193,8 @@ export default async function projectsRoutes(fastify: FastifyInstance): Promise<
       snippet: f.snippet,
       fix_prompt: f.fixPrompt,
       confidence: f.confidence,
+      suppressed: f.suppressed,
+      suppressed_reason: f.suppressedReason,
     }));
 
     // Compute delta from previous report
