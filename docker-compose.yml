@@ -37,6 +37,6 @@ services:
     environment:
       POSTGRES_DB: tenet
       POSTGRES_USER: tenet
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}  # required when the bundled-db profile is active
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
