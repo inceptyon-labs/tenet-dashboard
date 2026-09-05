@@ -14,3 +14,6 @@ badge-worker/.dev.vars*
 npm-debug.log*
 .vscode/
 .idea/
+docker-compose.override.yml
+compose.override.yml
+data/

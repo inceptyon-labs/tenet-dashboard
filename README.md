@@ -40,18 +40,19 @@ Self-hosted application health dashboard that receives audit reports from the [T
 #### Option A: Docker (recommended for Unraid)
 
 ```bash
-cp -r . /mnt/user/appdata/tenet/
-cd /mnt/user/appdata/tenet/
-
 cp .env.example .env
 # Edit .env:
-#   POSTGRES_PASSWORD=<openssl rand -hex 24>
+#   POSTGRES_PASSWORD=<openssl rand -hex 24>     (bundled Postgres, the default)
 #   TENET_API_TOKEN=<openssl rand -hex 32>
+#   DASHBOARD_PASSWORD=<something short>
+# To use an existing Postgres instead: drop the COMPOSE_PROFILES line and set DATABASE_URL.
 
-docker compose up -d
+docker compose up -d --build
 ```
 
-Dashboard is at `http://unraid.local:8787`.
+Dashboard is at `http://<host>:8787` (change with `TENET_PORT` in `.env`). Host-specific
+wiring such as an extra Docker network goes in an untracked `docker-compose.override.yml`
+next to the compose file.
 
 #### Option B: Local development
 

@@ -1,28 +1,42 @@
-version: '3.8'
+# Tenet Dashboard.
+#
+#   1. cp .env.example .env and fill it in.
+#   2. docker compose up -d --build
+#
+# By default this also starts a bundled Postgres (COMPOSE_PROFILES=bundled-db in .env).
+# To use an existing Postgres instead, unset COMPOSE_PROFILES and set DATABASE_URL.
+# Host-specific wiring (extra networks, volumes) goes in an untracked
+# docker-compose.override.yml next to this file; compose merges it automatically.
 services:
-  tenet-db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: tenet
-      POSTGRES_USER: tenet
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-
-  tenet-app:
+  tenet-dashboard:
     build: .
+    container_name: tenet-dashboard
     restart: unless-stopped
-    depends_on:
-      - tenet-db
+    ports:
+      - "${TENET_PORT:-8787}:8787"
     environment:
       NODE_ENV: production
       PORT: 8787
-      DATABASE_URL: postgres://tenet:${POSTGRES_PASSWORD}@tenet-db:5432/tenet
-      TENET_API_TOKEN: ${TENET_API_TOKEN}
-      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
+      TZ: ${TZ:-UTC}
+      DATABASE_URL: ${DATABASE_URL:-postgres://tenet:${POSTGRES_PASSWORD:-}@tenet-db:5432/tenet}
+      TENET_API_TOKEN: ${TENET_API_TOKEN:?set TENET_API_TOKEN in .env (openssl rand -hex 32)}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:?set DASHBOARD_PASSWORD in .env}
       TENET_BADGE_WORKER_URL: ${TENET_BADGE_WORKER_URL:-}
       TENET_BADGE_WRITE_TOKEN: ${TENET_BADGE_WRITE_TOKEN:-}
       TENET_PUBLIC_DASHBOARD_URL: ${TENET_PUBLIC_DASHBOARD_URL:-}
-    ports:
-      - "8787:8787"
+    labels:
+      # Unraid docker list: left-click opens the WebUI; icon shown in the list.
+      net.unraid.docker.webui: "http://[IP]:[PORT:8787]/"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/inceptyon-labs/tenet-dashboard/main/client/public/icon-512.png"
+
+  tenet-db:
+    image: postgres:16-alpine
+    container_name: tenet-db
+    restart: unless-stopped
+    profiles: ["bundled-db"]
+    environment:
+      POSTGRES_DB: tenet
+      POSTGRES_USER: tenet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
