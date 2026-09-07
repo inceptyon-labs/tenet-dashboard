@@ -1,3 +1,5 @@
+> Archived 2026-09-06: dependency findings (drizzle-orm, fastify) are patched in current package.json; kept as a historical record.
+
 # Security Scan Report
 
 **Repository:** tenet-dashboard

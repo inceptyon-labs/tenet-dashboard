@@ -1,0 +1,11 @@
+.git
+node_modules
+client/node_modules
+client/dist
+dist
+data
+.env
+.env.example
+.healthcheck
+.healthcheck.toml
+*.log

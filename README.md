@@ -12,7 +12,7 @@
 
 Self-hosted application health dashboard that receives audit reports from the [Tenet skills suite](https://github.com/inceptyon-labs/tenet-skills) and renders them with composite score rings, dimension tables, findings with copy-to-clipboard fix prompts, trend charts, and retention management.
 
-> Tenet is a two-part system. This repo is the **dashboard** — the web UI and API that stores and displays reports. The companion [**tenet-skills**](https://github.com/inceptyon-labs/tenet-skills) repo is a Claude Code plugin that runs the audits and uploads results here.
+> Tenet is a two-part system. This repo is the **dashboard**, the web UI and API that stores and displays reports. The companion [**tenet-skills**](https://github.com/inceptyon-labs/tenet-skills) repo is a Claude Code plugin that runs the audits and uploads results here.
 
 ```
   Claude Code                          Unraid / Docker
@@ -180,7 +180,7 @@ The dashboard accepts the current Tenet report schema, including confidence tier
 
 ## Data Retention
 
-Reports are retained in full for **90 days** (configurable in Settings). After that, a nightly cron job (3am) rolls them into daily score snapshots — preserving composite and dimension scores but dropping individual findings. Snapshots are retained for **730 days** by default.
+Reports are retained in full for **90 days** (configurable in Settings). After that, a nightly cron job (3am) rolls them into daily score snapshots, preserving composite and dimension scores but dropping individual findings. Snapshots are retained for **730 days** by default.
 
 You can trigger rollup manually from the Settings page or via `POST /api/v1/admin/rollup-now`.
 
@@ -190,7 +190,7 @@ Snapshot the `./data/postgres` directory (Docker) or run `pg_dump` against your 
 
 ## Tech Stack
 
-- **Backend:** Node 20, Fastify 4, Drizzle ORM, Postgres 16+
+- **Backend:** Node 20, Fastify 5, Drizzle ORM, Postgres 16+
 - **Frontend:** React 18, Vite 5, Tailwind CSS 3, Recharts 2
 - **Badges:** Cloudflare Worker + KV
 - **Deploy:** Docker, docker-compose, Cloudflare Tunnel
